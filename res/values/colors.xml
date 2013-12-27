@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="bg_blue">#D0E8FF</color>
+    <color name="bg_green">#D8FFDA</color>
+    <color name="bg_red">#FFD6F4</color>
+    <color name="bg_yellow">#FFF2BE</color>
+
+    <color name="region_blue">#C8E4FF</color>
+    <color name="region_green">#C8FFCA</color>
+    <color name="region_red">#FFC9F0</color>
+    <color name="region_yellow">#FFF1B4</color>
+
+    <color name="highlight_blue">#A9D5FF</color>
+    <color name="highlight_green">#BDFFC0</color>
+    <color name="highlight_red">#FFB6EC</color>
+    <color name="highlight_yellow">#FFEC9B</color>
+
+    <color name="liveStroke">#333333</color>
+    <color name="holdStroke">#999999</color>
+
+</resources>
