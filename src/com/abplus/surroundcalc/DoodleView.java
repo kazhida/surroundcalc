@@ -7,12 +7,12 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.util.Log;
+import android.view.*;
 import com.abplus.surroundcalc.models.Drawing;
 import com.abplus.surroundcalc.models.FreeHand;
 import com.abplus.surroundcalc.models.Stroke;
+import com.abplus.surroundcalc.models.Region;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,13 +22,6 @@ import org.jetbrains.annotations.Nullable;
  * Created by kazhida on 2013/12/27.
  */
 public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
-
-//    public enum KeyColor {
-//        BLUE,
-//        GREEN,
-//        RED,
-//        YELLOW
-//    }
 
     @Nullable
     private Stroke stroke;
@@ -43,16 +36,27 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
     @SuppressWarnings("unused")
     public DoodleView(Context context) {
         super(context);
+        init();
     }
 
     @SuppressWarnings("unused")
     public DoodleView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     @SuppressWarnings("unused")
     public DoodleView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        init();
+    }
+
+    private void init() {
+        getHolder().addCallback(this);
+        setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        setFocusable(true);
     }
 
     @Override
@@ -71,18 +75,33 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 stroke = new Stroke(new PointF(event.getX(), event.getY()), null);
+                Log.d("SurroundCALC", "origin: (" + event.getX() + ", " + event.getY());
                 redraw();
                 return true;
             case MotionEvent.ACTION_MOVE:
                 stroke = new Stroke(new PointF(event.getX(), event.getY()), stroke);
+                Log.d("SurroundCALC", "move: (" + event.getX() + ", " + event.getY());
                 redraw();
                 return true;
             case MotionEvent.ACTION_UP:
-                if (drawing != null && stroke != null) {
-                    drawing.detect(stroke);
+                Log.d("SurroundCALC", "end: (" + event.getX() + ", " + event.getY());
+                if (stroke != null) {
+                    if (stroke.isEmpty()) {
+                        Log.d("SurroundCALC", "empty stroke");
+
+                        if (event.getDownTime() < ViewConfiguration.getLongPressTimeout()) {
+                            callOnClick();
+                        } else {
+                            performLongClick();
+                        }
+                    } else if (drawing != null) {
+                        Log.d("SurroundCALC", "DETECT");
+                        drawing.detect(stroke);
+                        Log.d("SurroundCALC", "DETECT done");
+                    }
+                    stroke = null;
+                    redraw();
                 }
-                stroke = null;
-                redraw();
                 return true;
             default:
                 return super.onTouchEvent(event);
@@ -117,31 +136,24 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    @Nullable
+    public Drawing getDrawing() {
+        return drawing;
+    }
+
     private class Drawer {
 
-        private Paint drawPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private Paint regionPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private Paint highlightedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private int background;
         private float density = getDensity();
 
         Drawer() {
-            initStrokePaint(drawPaint, R.color.liveStroke, 3.0f);
-            initStrokePaint(strokePaint, R.color.holdStroke, 3.0f);
-            initFillPaint(regionPaint, R.color.region_blue);
-            initFillPaint(highlightedPaint, R.color.highlight_blue);
-        }
-
-        private void initStrokePaint(Paint paint, int colorId, float width) {
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setColor(getColor(colorId));
-            paint.setStrokeWidth(width * density);
-        }
-
-        private void initFillPaint(Paint paint, int colorId) {
-            paint.setStyle(Paint.Style.FILL);
-            paint.setColor(getColor(colorId));
+            strokePaint.setStyle(Paint.Style.STROKE);
+            strokePaint.setColor(getColor(R.color.liveStroke));
+            strokePaint.setStrokeWidth(3.0f * density);
+            regionPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            regionPaint.setColor(Color.WHITE);
         }
 
         private float getDensity() {
@@ -166,23 +178,15 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
             switch (keyColor) {
                 case BLUE:
                     background = getColor(R.color.bg_blue);
-                    regionPaint.setColor(getColor(R.color.region_blue));
-                    highlightedPaint.setColor(getColor(R.color.highlight_blue));
                     break;
                 case GREEN:
                     background = getColor(R.color.bg_green);
-                    regionPaint.setColor(getColor(R.color.region_green));
-                    highlightedPaint.setColor(getColor(R.color.highlight_green));
                     break;
                 case RED:
                     background = getColor(R.color.bg_red);
-                    regionPaint.setColor(getColor(R.color.region_red));
-                    highlightedPaint.setColor(getColor(R.color.highlight_red));
                     break;
                 case YELLOW:
                     background = getColor(R.color.bg_yellow);
-                    regionPaint.setColor(getColor(R.color.region_blue));
-                    highlightedPaint.setColor(getColor(R.color.highlight_red));
                     break;
             }
             redraw();
@@ -196,18 +200,25 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
 
 
             if (drawing != null) {
+
+                for (Region region: drawing.getRegions()) {
+                    canvas.drawPath(region.getPath(), regionPaint);
+                }
+
                 //  フリーハンドのストローク
+                strokePaint.setAlpha(72);
                 for (FreeHand freeHand: drawing.getFreeHands()) {
                     canvas.drawPath(freeHand.getPath(), strokePaint);
                 }
 
                 //  現在のストローク
+                strokePaint.setAlpha(255);
                 for (Stroke s = stroke; s != null; s = s.getTail()) {
                     Stroke tail = s.getTail();
                     if (tail != null) {
                         PointF p0 = tail.getPoint();
                         PointF p1 = s.getPoint();
-                        canvas.drawLine(p0.x, p0.y, p1.x, p1.y, drawPaint);
+                        canvas.drawLine(p0.x, p0.y, p1.x, p1.y, strokePaint);
                     }
                 }
             }

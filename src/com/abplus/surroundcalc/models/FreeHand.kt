@@ -5,9 +5,9 @@ import android.graphics.Path
 /**
  * Created by kazhida on 2013/12/27.
  */
-class FreeHand(stroke: Stroke) {
+open class FreeHand(stroke: Stroke) {
 
-    val path: Path = buildPath(stroke)
+    public val path: Path = buildPath(stroke)
 
     private fun buildPath(stroke: Stroke): Path {
         val path = Path();
