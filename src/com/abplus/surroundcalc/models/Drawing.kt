@@ -55,6 +55,7 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
 
     fun clear(): Unit {
         freeHands.clear()
+        regions.clear()
     }
 
     public class object {
