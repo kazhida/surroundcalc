@@ -9,10 +9,7 @@ import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
-import com.abplus.surroundcalc.models.Drawing;
-import com.abplus.surroundcalc.models.FreeHand;
-import com.abplus.surroundcalc.models.Stroke;
-import com.abplus.surroundcalc.models.Region;
+import com.abplus.surroundcalc.models.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,10 +21,13 @@ import org.jetbrains.annotations.Nullable;
 public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Nullable
-    private Stroke stroke;
+    private Drawing drawing;
 
     @Nullable
-    private Drawing drawing;
+    private Pickable selected;
+
+    @Nullable
+    private Stroke stroke;
 
     @NotNull
     private Drawer drawer = new Drawer();
@@ -52,7 +52,10 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void init() {
-        getHolder().addCallback(this);
+        SurfaceHolder holder = getHolder();
+        if (holder != null) {
+            holder.addCallback(this);
+        }
         setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
@@ -74,21 +77,31 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
     public boolean onTouchEvent(@NotNull MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                stroke = new Stroke(new PointF(event.getX(), event.getY()), null);
+                if (drawing != null) {
+                    selected = drawing.pick(new PointF(getX(), getY()));
+                }
+                if (selected == null) {
+                    stroke = new Stroke(new PointF(event.getX(), event.getY()), null);
+                }
                 Log.d("SurroundCALC", "origin: (" + event.getX() + ", " + event.getY());
                 redraw();
                 return true;
             case MotionEvent.ACTION_MOVE:
-                stroke = new Stroke(new PointF(event.getX(), event.getY()), stroke);
+                if (selected != null) {
+                    selected.moveTo(new PointF(getX(), getY()));
+                } else if (stroke != null) {
+                    stroke = new Stroke(new PointF(event.getX(), event.getY()), stroke);
+                }
                 Log.d("SurroundCALC", "move: (" + event.getX() + ", " + event.getY());
                 redraw();
                 return true;
             case MotionEvent.ACTION_UP:
                 Log.d("SurroundCALC", "end: (" + event.getX() + ", " + event.getY());
-                if (stroke != null) {
+                if (selected != null) {
+                    selected.moveTo(new PointF(getX(), getY()));
+                } else if (stroke != null) {
                     if (stroke.isEmpty()) {
                         Log.d("SurroundCALC", "empty stroke");
-
                         if (event.getDownTime() < ViewConfiguration.getLongPressTimeout()) {
                             callOnClick();
                         } else {
@@ -201,7 +214,15 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
 
             if (drawing != null) {
 
+
+
+                //  リージョン
                 for (Region region: drawing.getRegions()) {
+                    if (region == selected) {
+                        regionPaint.setAlpha(72);
+                    } else {
+                        regionPaint.setAlpha(255);
+                    }
                     canvas.drawPath(region.getPath(), regionPaint);
                 }
 

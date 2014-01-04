@@ -3,18 +3,30 @@ package com.abplus.surroundcalc.models
 import android.graphics.PointF
 import android.graphics.RectF
 import com.abplus.surroundcalc.models.Stroke.Side
+import android.graphics.Matrix
+import android.graphics.Path
 
 /**
  * Created by kazhida on 2014/01/02.
  */
-class Region(stroke: Stroke) : FreeHand(stroke) {
+class Region(stroke: Stroke) : Pickable {
 
-    private val stroke = stroke
+    public val path: Path = {(stroke: Stroke): Path ->
+        val path = Path();
 
-    private val initialized = {(): Boolean ->
+        for (segment in stroke) {
+            if (segment == stroke) {
+                path.moveTo(segment.x, segment.y)
+            } else {
+                path.lineTo(segment.x, segment.y)
+            }
+        }
         path.close()
-        true
-    }()
+        path
+    }(stroke)
+
+    override var pickedPoint: PointF? = null
+    private val stroke = stroke
 
     private fun insideBounds(p: PointF): Boolean {
         val bounds = RectF()
@@ -22,7 +34,7 @@ class Region(stroke: Stroke) : FreeHand(stroke) {
         return bounds.left <= p.x && p.x <= bounds.right && bounds.top <= p.y && p.y <= bounds.bottom;
     }
 
-    public fun inside(p: PointF) : Boolean {
+    protected override fun inside(p: PointF) : Boolean {
         if (insideBounds(p)) {
             var side = Side.UNKNOWN
             for (segment in stroke) {
@@ -36,6 +48,14 @@ class Region(stroke: Stroke) : FreeHand(stroke) {
             return true
         } else {
             return false
+        }
+    }
+
+    public override fun moveTo(p: PointF) : Unit {
+        if (pickedPoint != null) {
+            val matrix = Matrix();
+            matrix.setTranslate(p.x - pickedPoint!!.x, p.y - pickedPoint!!.y)
+            path.transform(matrix)
         }
     }
 }

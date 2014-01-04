@@ -45,7 +45,6 @@ class Stroke(val point: PointF, val tail: Stroke? = null): Iterable<Stroke> {
         return min
     }
 
-
     public val bounds: RectF
         get() {
             val rect = RectF()
@@ -69,14 +68,15 @@ class Stroke(val point: PointF, val tail: Stroke? = null): Iterable<Stroke> {
     }
 
     public class StrokeIterator(head: Stroke): Iterator<Stroke> {
-        private var i = head
+        private var head: Stroke? = head
 
         public override fun next()  : Stroke {
-            i = i.tail!!
-            return i
+            val result = head!!
+            head = head?.tail
+            return result
         }
         public override fun hasNext() : Boolean {
-            return i.tail != null
+            return head != null
         }
     }
 

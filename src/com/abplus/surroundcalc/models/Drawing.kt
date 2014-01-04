@@ -2,6 +2,8 @@ package com.abplus.surroundcalc.models
 
 import java.util.ArrayList
 import android.util.Log
+import android.graphics.PointF
+import android.graphics.Paint
 
 /**
  * Created by kazhida on 2013/12/27.
@@ -22,6 +24,7 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
 
     val freeHands: MutableList<FreeHand> = ArrayList<FreeHand>()
     val regions: MutableList<Region> = ArrayList<Region>()
+    val valueLabels: MutableList<ValueLabel> = ArrayList<ValueLabel>()
 
     fun detect(stroke: Stroke): Unit {
         //  todo: いろいろ検出
@@ -51,6 +54,20 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
             Log.d("SurroundCALC", "FreeHand")
             freeHands.add(FreeHand(stroke))
         }
+    }
+
+    public fun pick(p: PointF): Pickable? {
+        for (label in valueLabels) {
+            if (label.picked(p)) return label
+        }
+        for (region in regions) {
+            if (region.picked(p)) return region
+        }
+        return null
+    }
+
+    fun addLabel(p: PointF, value: Double, paint: Paint) : Unit {
+        valueLabels.add(ValueLabel(p, value, paint))
     }
 
     fun clear(): Unit {
