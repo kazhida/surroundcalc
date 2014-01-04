@@ -6,6 +6,9 @@
     <color name="bg_red">#FDBCC5</color>
     <color name="bg_yellow">#F5EF7C</color>
 
+    <color name="bg_tenkey">#cccccc</color>
+    <color name="bg_mask">#66000000</color>
+
     <color name="highlight_blue">#A9D5FF</color>
     <color name="highlight_green">#BDFFC0</color>
     <color name="highlight_red">#FFB6EC</color>
@@ -13,5 +16,7 @@
 
     <color name="liveStroke">#333333</color>
     <color name="holdStroke">#999999</color>
+
+    <color name="textColor">#333333</color>
 
 </resources>

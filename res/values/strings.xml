@@ -9,4 +9,20 @@
 
     <string name="clear">Clear</string>
 
+    <string name="n0">0</string>
+    <string name="n1">1</string>
+    <string name="n2">2</string>
+    <string name="n3">3</string>
+    <string name="n4">4</string>
+    <string name="n5">5</string>
+    <string name="n6">6</string>
+    <string name="n7">7</string>
+    <string name="n8">8</string>
+    <string name="n9">9</string>
+    <string name="dot">.</string>
+    <string name="ent">ent</string>
+    <string name="bs">BS</string>
+    <string name="ca">CA</string>
+    <string name="neg">+/-</string>
+
 </resources>

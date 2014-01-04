@@ -5,19 +5,12 @@ import android.graphics.PointF
 /**
  * Created by kazhida on 2014/01/04.
  */
-trait Pickable {
-
-    protected var pickedPoint: PointF?
-
-    public fun picked(p: PointF) : Boolean {
-        pickedPoint = if (inside(p)) {
-            p
-        } else {
-            null
-        }
-        return pickedPoint != null
+abstract class Pickable {
+    class object {
+        var id_seed = 0;
     }
+    public val id: Int = ++id_seed;
 
-    protected fun inside(p: PointF) : Boolean
-    public fun moveTo(p: PointF) : Unit
+    abstract public fun picked(p: PointF) : Boolean
+    abstract public fun moveTo(p: PointF) : Unit
 }

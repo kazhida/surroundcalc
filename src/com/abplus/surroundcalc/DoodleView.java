@@ -2,14 +2,12 @@ package com.abplus.surroundcalc;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PointF;
+import android.graphics.*;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.*;
 import com.abplus.surroundcalc.models.*;
+import com.abplus.surroundcalc.models.Region;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,13 +16,19 @@ import org.jetbrains.annotations.Nullable;
  *
  * Created by kazhida on 2013/12/27.
  */
-public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
+public final class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Nullable
     private Drawing drawing;
 
     @Nullable
     private Pickable selected;
+
+    @Nullable
+    private Pickable hover;
+
+    @Nullable
+    private PointF tapped;
 
     @Nullable
     private Stroke stroke;
@@ -75,46 +79,56 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public boolean onTouchEvent(@NotNull MotionEvent event) {
+        PointF p = new PointF(event.getX(), event.getY());
+
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                tapped = new PointF(p.x, p.y);
                 if (drawing != null) {
-                    selected = drawing.pick(new PointF(getX(), getY()));
+                    selected = drawing.pick(tapped);
                 }
                 if (selected == null) {
-                    stroke = new Stroke(new PointF(event.getX(), event.getY()), null);
+                    stroke = new Stroke(tapped, null);
                 }
-                Log.d("SurroundCALC", "origin: (" + event.getX() + ", " + event.getY());
                 redraw();
                 return true;
             case MotionEvent.ACTION_MOVE:
+
                 if (selected != null) {
-                    selected.moveTo(new PointF(getX(), getY()));
+                    selected.moveTo(p);
+                    if (drawing != null) {
+                        hover = drawing.pick(p);
+                    }
                 } else if (stroke != null) {
-                    stroke = new Stroke(new PointF(event.getX(), event.getY()), stroke);
+                    stroke = new Stroke(p, stroke);
                 }
-                Log.d("SurroundCALC", "move: (" + event.getX() + ", " + event.getY());
                 redraw();
                 return true;
             case MotionEvent.ACTION_UP:
-                Log.d("SurroundCALC", "end: (" + event.getX() + ", " + event.getY());
                 if (selected != null) {
-                    selected.moveTo(new PointF(getX(), getY()));
+                    selected.moveTo(p);
                 } else if (stroke != null) {
                     if (stroke.isEmpty()) {
-                        Log.d("SurroundCALC", "empty stroke");
-                        if (event.getDownTime() < ViewConfiguration.getLongPressTimeout()) {
-                            callOnClick();
+                        long pressed = event.getEventTime() - event.getDownTime();
+                        if (pressed < ViewConfiguration.getLongPressTimeout()) {
+                            if (selected == null) {
+                                callOnClick();
+                            }
                         } else {
-                            performLongClick();
+                            if (selected == null) {
+                                performLongClick();
+                            }
                         }
                     } else if (drawing != null) {
                         Log.d("SurroundCALC", "DETECT");
                         drawing.detect(stroke);
                         Log.d("SurroundCALC", "DETECT done");
                     }
-                    stroke = null;
-                    redraw();
                 }
+                stroke = null;
+                selected = null;
+                hover = null;
+                redraw();
                 return true;
             default:
                 return super.onTouchEvent(event);
@@ -154,10 +168,31 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
         return drawing;
     }
 
+    public void addLabel(@NotNull PointF point, double value) {
+        if (drawing != null) {
+            drawing.addLabel(point, value, drawer.valuePaint);
+        }
+    }
+
+    @NotNull
+    public PointF getTapped() {
+        if (tapped != null) {
+            return tapped;
+        } else {
+            return new PointF(0, 0);
+        }
+    }
+
+    @Nullable
+    public Pickable getSelected() {
+        return selected;
+    }
+
     private class Drawer {
 
         private Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private Paint regionPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private Paint valuePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private int background;
         private float density = getDensity();
 
@@ -165,8 +200,14 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
             strokePaint.setStyle(Paint.Style.STROKE);
             strokePaint.setColor(getColor(R.color.liveStroke));
             strokePaint.setStrokeWidth(3.0f * density);
+
             regionPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             regionPaint.setColor(Color.WHITE);
+
+            valuePaint.setStyle(Paint.Style.FILL);
+            valuePaint.setColor(getColor(R.color.textColor));
+            valuePaint.setTextAlign(Paint.Align.CENTER);
+            valuePaint.setTextSize(24.0f * density);
         }
 
         private float getDensity() {
@@ -205,27 +246,33 @@ public class DoodleView extends SurfaceView implements SurfaceHolder.Callback {
             redraw();
         }
 
+        private int id(Pickable region) {
+            if (region == null) {
+                return 0;
+            } else {
+                return region.getId();
+            }
+        }
+
         void draw(Canvas canvas) {
             canvas.drawColor(background);
 
-
-
-
-
             if (drawing != null) {
-
-
-
                 //  リージョン
                 for (Region region: drawing.getRegions()) {
-                    if (region == selected) {
-                        regionPaint.setAlpha(72);
+                    if (region == selected || region == hover) {
+                        Log.d("surroundcalc", "highlighted:" + id(region) + "," + id(selected) + "," + id(hover));
+                        regionPaint.setAlpha(153);
                     } else {
                         regionPaint.setAlpha(255);
                     }
                     canvas.drawPath(region.getPath(), regionPaint);
                 }
-
+                //  ラベル
+                for (ValueLabel label: drawing.getValueLabels()) {
+                    PointF center = label.getCenterPoint();
+                    canvas.drawText(label.getText(), center.x, center.y, valuePaint);
+                }
                 //  フリーハンドのストローク
                 strokePaint.setAlpha(72);
                 for (FreeHand freeHand: drawing.getFreeHands()) {

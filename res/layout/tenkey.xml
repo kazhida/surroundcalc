@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_tenkey"
+        >
+
+    <TextView
+            android:id="@+id/value_text"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_margin="4dp"
+            android:gravity="right|center_vertical"
+            android:textSize="8pt"
+            />
+
+    <TableLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        <TableRow>
+            <Button android:id="@+id/key_neg"
+                    android:layout_width="48dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="@string/neg"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_ca"
+                    android:layout_width="48dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="@string/ca"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_bs"
+                    android:layout_width="48dp"
+                    android:layout_height="36dp"
+                    android:gravity="center"
+                    android:text="@string/bs"
+                    android:textSize="6pt"
+                    />
+        </TableRow>
+
+        <TableRow>
+            <Button android:id="@+id/key_7"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n7"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_8"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n8"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_9"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n9"
+                    android:textSize="6pt"
+                    />
+        </TableRow>
+
+        <TableRow>
+            <Button android:id="@+id/key_4"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n4"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_5"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n5"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_6"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n6"
+                    android:textSize="6pt"
+                    />
+        </TableRow>
+
+        <TableRow>
+            <Button android:id="@+id/key_1"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n1"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_2"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n2"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_3"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n3"
+                    android:textSize="6pt"
+                    />
+        </TableRow>
+
+        <TableRow>
+            <Button android:id="@+id/key_0"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/n0"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_dot"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/dot"
+                    android:textSize="6pt"
+                    />
+            <Button android:id="@+id/key_ent"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/ent"
+                    android:textSize="6pt"
+                    />
+        </TableRow>
+    </TableLayout>
+</LinearLayout>
