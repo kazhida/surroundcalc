@@ -73,6 +73,7 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
     public fun clear(): Unit {
         freeHands.clear()
         regions.clear()
+        valueLabels.clear()
     }
 
     public fun unbind(picked: Pickable) {
