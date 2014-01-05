@@ -314,7 +314,10 @@ class DoodleActivity : Activity() {
             doodleView.redraw()
         }
 
-        tenkey!!.showAsDropDown(findViewById(R.id.popup_anchor)!!, doodleView.getWidth(), 0)
+        val anchor = findViewById(R.id.popup_anchor)!!
+        setViewMargin(anchor, PointF(0.0f, 0.0f))
+
+        tenkey!!.showAsDropDown(anchor, doodleView.getWidth(), 0)
     }
 
     private fun getValueText(): TextView? {
