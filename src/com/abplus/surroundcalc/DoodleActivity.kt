@@ -118,9 +118,11 @@ class DoodleActivity : Activity() {
                 doodleView.clear()
                 true
             }
-            else -> {
-                super.onOptionsItemSelected(item)
+            R.id.ic_action_content_undo -> {
+                doodleView.undo()
+                true
             }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -136,12 +138,16 @@ class DoodleActivity : Activity() {
     private fun popupLocation(popup: PopupWindow): Point {
         val offset = topInGlobal(doodleView)
         Log.d("surroundcalc", "H=" + heightInGlobal(doodleView) + " h=" + doodleView.getHeight() + " offset=" + offset)
-
+        Log.d("surroundcalc", "doodle=" + doodleView.getWidth() + "x" + doodleView.getHeight())
+        Log.d("surroundcalc", "popup=" + popup.getWidth() + "x" + popup.getHeight())
         val w = doodleView.getWidth() - popup.getWidth()
-        val h = doodleView.getHeight() - popup.getHeight() + offset
+        val h = doodleView.getHeight() - popup.getHeight() - offset
 
         val x: Int = Math.min(doodleView.getTapped().x.toInt(), w)
         val y: Int = Math.min(doodleView.getTapped().y.toInt(), h)
+
+        Log.d("surroundclac", "x=" + x + " x0=" + doodleView.getTapped().x.toInt() + " w=" + w)
+        Log.d("surroundclac", "y=" + y + " y0=" + doodleView.getTapped().y.toInt() + " h=" + h)
 
         return Point(x, y + offset)
     }
@@ -212,7 +218,6 @@ class DoodleActivity : Activity() {
         view.findViewById(R.id.key_9)?.setOnClickListener(NumberListener(9))
         view.findViewById(R.id.key_dot)?.setOnClickListener(DotListener())
         view.findViewById(R.id.key_bs)?.setOnClickListener(ClearListener(false))
-        view.findViewById(R.id.key_ca)?.setOnClickListener(ClearListener(true))
         view.findViewById(R.id.key_neg)?.setOnClickListener(NegativeListener())
         view.findViewById(R.id.key_ent)?.setOnClickListener {
             if (label != null) {

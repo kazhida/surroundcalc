@@ -190,6 +190,13 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
         return picked;
     }
 
+    public void undo() {
+        if (drawing != null) {
+            drawing.undo();
+            redraw();
+        }
+    }
+
     private class Drawer {
 
         private Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);

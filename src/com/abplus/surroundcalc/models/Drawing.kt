@@ -64,16 +64,16 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
         return null
     }
 
-    fun addLabel(p: PointF, value: Double, paint: Paint) : Unit {
+    public fun addLabel(p: PointF, value: Double, paint: Paint) : Unit {
         valueLabels.add(ValueLabel(p, value, paint).bind(regions))
     }
 
-    fun clear(): Unit {
+    public fun clear(): Unit {
         freeHands.clear()
         regions.clear()
     }
 
-    fun unbind(picked: Pickable) {
+    public fun unbind(picked: Pickable) {
         if (picked is Region) {
             picked.unbind()
         }
@@ -82,13 +82,17 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
         }
     }
 
-    fun bind(picked: Pickable) {
+    public fun bind(picked: Pickable) {
         if (picked is Region) {
             picked.bind(valueLabels)
         }
         if (picked is ValueLabel) {
             picked.bind(regions)
         }
+    }
+
+    public fun undo() : Unit {
+        freeHands.remove(freeHands.size() - 1)
     }
 
     public class object {
