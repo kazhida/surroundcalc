@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu   xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item   android:id="@+id/ope_neg"
+            android:title="@string/undo"
+            android:icon="@drawable/ope_sub"
+            android:showAsAction="always"
+            />
+
+    <item   android:id="@+id/func_square"
+            android:title="@string/undo"
+            android:icon="@drawable/func_square"
+            android:showAsAction="always"
+            />
+
+    <item   android:id="@+id/func_sqrt"
+            android:title="@string/undo"
+            android:icon="@drawable/func_sqrt"
+            android:showAsAction="always"
+            />
+
+</menu>

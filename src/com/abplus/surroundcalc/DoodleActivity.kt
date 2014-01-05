@@ -22,6 +22,8 @@ import android.graphics.Rect
 import android.util.Log
 import android.widget.PopupMenu
 import android.graphics.Point
+import android.widget.RelativeLayout
+import android.graphics.PointF
 
 /**
  * Created by kazhida on 2014/01/02.
@@ -48,11 +50,6 @@ class DoodleActivity : Activity() {
                 showTenkey(null)
             }
         }
-
-//        val tenkeyMask = findViewById(R.id.mask)
-//        tenkeyMask?.setOnClickListener {
-//            dismissTenkey()
-//        }
 
         val actionBar = getActionBar()!!
         addTab(actionBar, Drawing.KeyColor.BLUE, true)
@@ -135,71 +132,146 @@ class DoodleActivity : Activity() {
         override fun onTabReselected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {}
     }
 
-    private fun popupLocation(popup: PopupWindow): Point {
-        val offset = topInGlobal(doodleView)
-        Log.d("surroundcalc", "H=" + heightInGlobal(doodleView) + " h=" + doodleView.getHeight() + " offset=" + offset)
-        Log.d("surroundcalc", "doodle=" + doodleView.getWidth() + "x" + doodleView.getHeight())
-        Log.d("surroundcalc", "popup=" + popup.getWidth() + "x" + popup.getHeight())
-        val w = doodleView.getWidth() - popup.getWidth()
-        val h = doodleView.getHeight() - popup.getHeight() - offset
-
-        val x: Int = Math.min(doodleView.getTapped().x.toInt(), w)
-        val y: Int = Math.min(doodleView.getTapped().y.toInt(), h)
-
-        Log.d("surroundclac", "x=" + x + " x0=" + doodleView.getTapped().x.toInt() + " w=" + w)
-        Log.d("surroundclac", "y=" + y + " y0=" + doodleView.getTapped().y.toInt() + " h=" + h)
-
-        return Point(x, y + offset)
-    }
-
-
     private fun showMenu(region: Region): Unit {
-        val view = when (region.labels.size) {
-            1-> createMenu1()
-            2 -> createMenu2()
-            else -> createMenuN()
+        val anchor = findViewById(R.id.popup_anchor)!!
+        val menu = when (region.labels.size()) {
+            1 -> createMenu1(anchor, region.labels.get(0))
+            2 -> createMenu2(anchor, region.labels.get(0), region.labels.get(1))
+            else -> createMenuN(anchor, region.labels)
         }
-        val wrap = ViewGroup.LayoutParams.WRAP_CONTENT
 
-        val popup = PopupWindow(this)
-        popup.setWindowLayoutMode(wrap, wrap)
-        popup.setContentView(view)
-        popup.setOutsideTouchable(true)
-        popup.setFocusable(true)
-
-        val p = popupLocation(popup)
-        popup.showAtLocation(doodleView, Gravity.LEFT + Gravity.TOP, p.x, p.y)
+        setViewMargin(anchor, doodleView.getTapped())
+        menu.show()
     }
 
-    private fun createMenu1(): View {
-        val view = getLayoutInflater().inflate(R.layout.calc_1, null, false)
+    private fun setViewMargin(view: View, p: PointF) {
+        val x: Int = p.x.toInt()
+        var y: Int = p.y.toInt()
+        val params = RelativeLayout.LayoutParams(view.getLayoutParams()!!)
 
+        params.setMargins(x, y, 0, 0)
 
-        return view!!
+        view.setLayoutParams(params)
     }
 
-    private fun createMenu2(): View {
-        val view = getLayoutInflater().inflate(R.layout.calc_2, null, false)
+    private fun initMenuItem(menu: Menu, id: Int, value: Double, prefix: String) {
+        val item = menu.findItem(id)
+        item?.setTitle(prefix + ":  " + value.toString())
 
-
-        return view!!
     }
 
-    private fun createMenuN(): View {
-        val view = getLayoutInflater().inflate(R.layout.calc_n, null, false)
+    private fun addResult(value: Double) : Boolean {
+        doodleView.addResultLabel(doodleView.getTapped(), value)
+        doodleView.redraw()
+        return true
+    }
 
+    private fun createMenu1(anchor: View, value: ValueLabel): PopupMenu {
+        val popupMenu = PopupMenu(this, anchor)
 
-        return view!!
+        popupMenu.inflate(R.menu.calc_1)
+        val menu = popupMenu.getMenu()!!
+
+        val neg = -value.value
+        val x2 = value.value * value.value
+        val sqrt = Math.sqrt(value.value)
+
+        initMenuItem(menu, R.id.ope_neg,     neg,  "-")
+        initMenuItem(menu, R.id.func_square, x2,   "x2")
+        initMenuItem(menu, R.id.func_sqrt,   sqrt, "sqrt")
+
+        popupMenu.setOnMenuItemClickListener {
+            when (it?.getItemId()) {
+                R.id.ope_neg     -> addResult(neg)
+                R.id.func_square -> addResult(x2)
+                R.id.func_sqrt   -> addResult(sqrt)
+                else -> false
+            }
+        }
+
+        return popupMenu
+    }
+
+    private fun createMenu2(anchor: View, value1: ValueLabel, value2: ValueLabel): PopupMenu {
+        val popupMenu = PopupMenu(this, anchor)
+
+        popupMenu.inflate(R.menu.calc_2)
+
+        val menu = popupMenu.getMenu()!!
+
+        val dx = value2.centerPoint.x - value1.centerPoint.x
+        val dy = value1.centerPoint.y - value2.centerPoint.y
+
+        Log.d("surroundcalc", "v1=" +  value1.value + " v2=" + value2.value)
+        val v1 = if (dy > dx) value2 else value1
+        val v2 = if (dy > dx) value1 else value2
+        Log.d("surroundcalc", "v1=" +  v1.value + " v2=" + v2.value)
+
+        val add = v1.value + v2.value
+        val sub = v1.value - v2.value
+        val mul = v1.value * v2.value
+        val div = v1.value / v2.value
+        val pow = Math.pow(v1.value, v2.value)
+
+        initMenuItem(menu, R.id.ope_add,  add, "+")
+        initMenuItem(menu, R.id.ope_sub,  sub, "+")
+        initMenuItem(menu, R.id.ope_mul,  mul, "×")
+        initMenuItem(menu, R.id.ope_div,  div, "÷")
+        initMenuItem(menu, R.id.func_pow, pow, "pow")
+
+        popupMenu.setOnMenuItemClickListener {
+            when (it?.getItemId()) {
+                R.id.ope_add  -> addResult(add)
+                R.id.ope_sub  -> addResult(sub)
+                R.id.ope_mul  -> addResult(mul)
+                R.id.ope_div  -> addResult(div)
+                R.id.func_pow -> addResult(pow)
+                else -> false
+            }
+        }
+
+        return popupMenu
+    }
+
+    private fun createMenuN(anchor: View, labels: List<ValueLabel>): PopupMenu {
+        val popupMenu = PopupMenu(this, anchor)
+
+        popupMenu.inflate(R.menu.calc_n)
+
+        val menu = popupMenu.getMenu()!!
+
+        var sum = 0.0
+        var sum2 = 0.0
+        var count = 0
+        for (label in labels) {
+            sum += label.value
+            sum2 += label.value * label.value
+            count++
+        }
+        val avg = sum / count
+        val sn = sum2 / count - avg * avg
+        val sn1 = sn * count / (count - 1)
+
+        initMenuItem(menu, R.id.func_sum,  sum, "sum")
+        initMenuItem(menu, R.id.func_varp, sn, "σ/n")
+        initMenuItem(menu, R.id.func_vars, sn1, "σ/n-1")
+
+        popupMenu.setOnMenuItemClickListener {
+            when (it?.getItemId()) {
+                R.id.func_sum  -> addResult(sum)
+                R.id.func_varp -> addResult(sn)
+                R.id.func_vars -> addResult(sn1)
+                else -> false
+            }
+        }
+
+        return popupMenu
     }
 
     private fun showTenkey(label: ValueLabel?): Unit {
-//        val mask = findViewById(R.id.mask)
-//        mask!!.setVisibility(View.VISIBLE)
-
         val view = getLayoutInflater().inflate(R.layout.tenkey, null, false)!!
         val wrap = ViewGroup.LayoutParams.WRAP_CONTENT
 
-//        view!!.setLayoutParams(ViewGroup.LayoutParams(wrap, wrap))
         tenkey = PopupWindow(this)
         tenkey!!.setWindowLayoutMode(wrap, wrap)
         tenkey!!.setContentView(view)
@@ -217,7 +289,7 @@ class DoodleActivity : Activity() {
         view.findViewById(R.id.key_8)?.setOnClickListener(NumberListener(8))
         view.findViewById(R.id.key_9)?.setOnClickListener(NumberListener(9))
         view.findViewById(R.id.key_dot)?.setOnClickListener(DotListener())
-        view.findViewById(R.id.key_bs)?.setOnClickListener(ClearListener(false))
+        view.findViewById(R.id.key_bs)?.setOnClickListener(BackSpaceListener())
         view.findViewById(R.id.key_neg)?.setOnClickListener(NegativeListener())
         view.findViewById(R.id.key_ent)?.setOnClickListener {
             if (label != null) {
@@ -225,7 +297,7 @@ class DoodleActivity : Activity() {
             } else {
                 doodleView.addLabel(doodleView.getTapped(), getValue())
             }
-            dismissTenkey()
+            tenkey?.dismiss()
         }
 
         val text = getValueText()
@@ -234,30 +306,15 @@ class DoodleActivity : Activity() {
             text?.setText(label.text)
         } else {
             text?.setText("0")
+            doodleView.setMark()
         }
 
-        val p = popupLocation(tenkey!!)
+        tenkey!!.setOnDismissListener {
+            doodleView.resetMark()
+            doodleView.redraw()
+        }
 
-        tenkey!!.showAtLocation(doodleView, Gravity.LEFT + Gravity.TOP, p.x, p.y)
-    }
-
-    private fun topInGlobal(view: View): Int {
-        var rect = Rect()
-        view.getGlobalVisibleRect(rect)
-        return rect.top
-    }
-
-    private fun heightInGlobal(view: View): Int {
-        var rect = Rect()
-        view.getGlobalVisibleRect(rect)
-        return rect.bottom - rect.top
-    }
-
-    private fun dismissTenkey() {
-        tenkey?.dismiss()
-        tenkey = null
-//        findViewById(R.id.mask)?.setVisibility(View.GONE)
-        doodleView.redraw()
+        tenkey!!.showAsDropDown(findViewById(R.id.popup_anchor)!!, doodleView.getWidth(), 0)
     }
 
     private fun getValueText(): TextView? {
@@ -291,23 +348,18 @@ class DoodleActivity : Activity() {
         }
     }
 
-    private inner class ClearListener(val all: Boolean): View.OnClickListener {
+    private inner class BackSpaceListener: View.OnClickListener {
         override fun onClick(v: View) {
             val text = getValueText()
-            if (all) {
-                text?.setText("0")
-            } else {
-                var s = text?.getText()?.toString()
-                if (s != null) {
-                    if (s!!.length == 1) {
-                        text?.setText("0")
-                    } else {
-                        s = s!!.substring(0, s!!.length - 1)
-                        text?.setText(s)
-                    }
+            var s = text?.getText()?.toString()
+            if (s != null) {
+                if (s!!.length == 1) {
+                    text?.setText("0")
+                } else {
+                    s = s!!.substring(0, s!!.length - 1)
+                    text?.setText(s)
                 }
             }
-
         }
     }
 

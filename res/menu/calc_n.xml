@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu   xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item   android:id="@+id/func_sum"
+            android:title="@string/undo"
+            android:icon="@drawable/func_sum"
+            android:showAsAction="always"
+            />
+
+
+    <item   android:id="@+id/func_varp"
+            android:title="@string/undo"
+            android:icon="@drawable/func_varp"
+            android:showAsAction="always"
+            />
+
+    <item   android:id="@+id/func_vars"
+            android:title="@string/undo"
+            android:icon="@drawable/func_vars"
+            android:showAsAction="always"
+            />
+
+</menu>

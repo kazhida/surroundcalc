@@ -30,10 +30,12 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
     @Nullable
     private PointF tapped;
 
+
     @Nullable
     private Stroke stroke;
 
     private int moveCount;
+    private boolean mark;
 
     @NotNull
     private Drawer drawer = new Drawer();
@@ -87,7 +89,7 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
             case MotionEvent.ACTION_DOWN:
                 moveCount = 0;
                 tapped = new PointF(p.x, p.y);
-                if (drawing != null) {
+                if (drawing != null && picked == null) {
                     picked = drawing.pick(tapped);
                 }
                 if (picked == null) {
@@ -176,10 +178,14 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
 
+    public void addResultLabel(@NotNull PointF point, double value) {
+        addLabel(point, value);
+    }
+
     @NotNull
     public PointF getTapped() {
         if (tapped != null) {
-            return tapped;
+            return new PointF(tapped.x, tapped.y);
         } else {
             return new PointF(0, 0);
         }
@@ -197,11 +203,21 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
 
+    public void setMark() {
+        mark = true;
+    }
+
+
+    public void resetMark() {
+        mark = false;
+    }
+
     private class Drawer {
 
         private Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private Paint regionPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private Paint valuePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private Paint markerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private int background;
         private float density = getDensity();
 
@@ -217,6 +233,10 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
             valuePaint.setColor(getColor(R.color.textColor));
             valuePaint.setTextAlign(Paint.Align.CENTER);
             valuePaint.setTextSize(24.0f * density);
+
+            markerPaint.setStyle(Paint.Style.STROKE);
+            markerPaint.setColor(Color.RED);
+            markerPaint.setStrokeWidth(1.0f * density);
         }
 
         private float getDensity() {
@@ -288,6 +308,12 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
                         PointF p1 = s.getPoint();
                         canvas.drawLine(p0.x, p0.y, p1.x, p1.y, strokePaint);
                     }
+                }
+
+                if (mark && tapped != null) {
+                    float dx = 8.0f * density;
+                    canvas.drawLine(tapped.x - dx, tapped.y - dx, tapped.x + dx, tapped.y + dx, markerPaint);
+                    canvas.drawLine(tapped.x - dx, tapped.y + dx, tapped.x + dx, tapped.y - dx, markerPaint);
                 }
             }
         }

@@ -32,13 +32,13 @@
             />
 
     <TextView
-            android:id="@+id/func_var"
+            android:id="@+id/func_vars"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/result"
             android:textSize="8pt"
             android:textColor="@color/textColor"
             android:gravity="right|center_vertical"
-            android:drawableLeft="@drawable/func_var"
+            android:drawableLeft="@drawable/func_varp"
             />
 </LinearLayout>

@@ -12,7 +12,7 @@ import android.util.Log
  */
 class ValueLabel(center: PointF, value: Double, val paint: Paint): Pickable() {
 
-    private var center = center
+    private var center = PointF(center.x, center.y)
 
     public var value: Double = value
     public val text: String get() = value.toString()

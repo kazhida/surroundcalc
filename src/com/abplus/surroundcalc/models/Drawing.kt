@@ -64,8 +64,10 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
         return null
     }
 
-    public fun addLabel(p: PointF, value: Double, paint: Paint) : Unit {
-        valueLabels.add(ValueLabel(p, value, paint).bind(regions))
+    public fun addLabel(p: PointF, value: Double, paint: Paint) : ValueLabel {
+        val label = ValueLabel(p, value, paint).bind(regions)
+        valueLabels.add(label)
+        return label
     }
 
     public fun clear(): Unit {
