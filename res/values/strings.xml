@@ -7,7 +7,10 @@
     <string name="red">Red</string>
     <string name="yellow">Yellow</string>
 
+    <string name="undo">Undo</string>
     <string name="clear">Clear</string>
+    <string name="result">Result</string>
+    <string name="more">……</string>
 
     <string name="n0">0</string>
     <string name="n1">1</string>

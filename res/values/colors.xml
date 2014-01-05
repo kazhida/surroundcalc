@@ -8,6 +8,7 @@
 
     <color name="bg_tenkey">#cccccc</color>
     <color name="bg_mask">#66000000</color>
+    <color name="bg_menu">#ffffff</color>
 
     <color name="highlight_blue">#A9D5FF</color>
     <color name="highlight_green">#BDFFC0</color>

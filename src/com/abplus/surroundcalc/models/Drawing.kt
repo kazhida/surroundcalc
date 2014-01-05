@@ -22,9 +22,9 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
         fun get(color: KeyColor): Drawing
     }
 
-    val freeHands: MutableList<FreeHand> = ArrayList<FreeHand>()
-    val regions: MutableList<Region> = ArrayList<Region>()
-    val valueLabels: MutableList<ValueLabel> = ArrayList<ValueLabel>()
+    public val freeHands: MutableList<FreeHand> = ArrayList<FreeHand>()
+    public val regions: MutableList<Region> = ArrayList<Region>()
+    public val valueLabels: MutableList<ValueLabel> = ArrayList<ValueLabel>()
 
     fun detect(stroke: Stroke): Unit {
         //  todo: いろいろ検出
@@ -48,10 +48,8 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
         Log.d("SurroundCALC", "Distance = " + distance)
 
         if (stroke.distance(origin) < limit) {
-            Log.d("SurroundCALC", "Region")
-            regions.add(Region(stroke))
+            regions.add(Region(stroke).bind(valueLabels))
         } else {
-            Log.d("SurroundCALC", "FreeHand")
             freeHands.add(FreeHand(stroke))
         }
     }
@@ -67,12 +65,30 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
     }
 
     fun addLabel(p: PointF, value: Double, paint: Paint) : Unit {
-        valueLabels.add(ValueLabel(p, value, paint))
+        valueLabels.add(ValueLabel(p, value, paint).bind(regions))
     }
 
     fun clear(): Unit {
         freeHands.clear()
         regions.clear()
+    }
+
+    fun unbind(picked: Pickable) {
+        if (picked is Region) {
+            picked.unbind()
+        }
+        if (picked is ValueLabel) {
+            picked.unbind(regions)
+        }
+    }
+
+    fun bind(picked: Pickable) {
+        if (picked is Region) {
+            picked.bind(valueLabels)
+        }
+        if (picked is ValueLabel) {
+            picked.bind(regions)
+        }
     }
 
     public class object {

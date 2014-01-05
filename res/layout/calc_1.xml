@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:background="@color/bg_menu"
+        >
+
+    <TextView
+            android:id="@+id/ope_neg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/result"
+            android:textSize="8pt"
+            android:textColor="@color/textColor"
+            android:gravity="right|center_vertical"
+            android:drawableLeft="@drawable/ope_sub"
+            />
+
+    <TextView
+            android:id="@+id/func_square"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/result"
+            android:textSize="8pt"
+            android:textColor="@color/textColor"
+            android:gravity="right|center_vertical"
+            android:drawableLeft="@drawable/func_square"
+            />
+
+    <TextView
+            android:id="@+id/func_sqrt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/result"
+            android:textSize="8pt"
+            android:textColor="@color/textColor"
+            android:gravity="right|center_vertical"
+            android:drawableLeft="@drawable/func_sqrt"
+            />
+
+    <TextView
+            android:id="@+id/func_more"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/result"
+            android:textSize="8pt"
+            android:textColor="@color/textColor"
+            android:gravity="right|center_vertical"
+            android:drawableLeft="@drawable/func_more"
+            />
+</LinearLayout>

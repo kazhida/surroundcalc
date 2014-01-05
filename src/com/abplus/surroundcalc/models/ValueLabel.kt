@@ -13,7 +13,6 @@ import android.util.Log
 class ValueLabel(center: PointF, value: Double, val paint: Paint): Pickable() {
 
     private var center = center
-    private var pickedPoint: PointF? = null
 
     public var value: Double = value
     public val text: String get() = value.toString()
@@ -37,21 +36,24 @@ class ValueLabel(center: PointF, value: Double, val paint: Paint): Pickable() {
             return result
         }
 
-    override public fun picked(p: PointF) : Boolean {
+
+    override protected fun isInside(p: PointF): Boolean {
         val b = bounds
-        Log.d("surroundcalc", "TEXT=" + text + " RECT=(" + b.left + "," + b.top + ")-(" + b.right + "," + b.bottom + ") P=(" + p.x + "," + p.y + ")")
-
-
-        pickedPoint = if (b.left <= p.x && p.x <= b.right && b.top <= p.y && p.y <= b.bottom) PointF(p.x, p.y) else null
-        return pickedPoint != null
+        return b.left <= p.x && p.x <= b.right && b.top <= p.y && p.y <= b.bottom
     }
 
     override public fun moveTo(p: PointF) : Unit {
-        if (pickedPoint != null) {
-            Log.d("surroundcalc", "p1=(" + p.x + "," + p.y + ") p1=(" + pickedPoint!!.x + "," + pickedPoint!!.y + ")")
+        center.x += p.x - pickedPoint.x
+        center.y += p.y - pickedPoint.y
+    }
 
-            center.x += p.x - pickedPoint!!.x
-            center.y += p.y - pickedPoint!!.y
-        }
+    public fun unbind(regions: List<Region>): ValueLabel {
+        for (region in regions) region.unbind(this)
+        return this
+    }
+
+    public fun bind(regions: List<Region>): ValueLabel {
+        for (region in regions) region.bind(this)
+        return this
     }
 }

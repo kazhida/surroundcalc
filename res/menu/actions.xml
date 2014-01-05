@@ -2,11 +2,15 @@
 
 <menu   xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item   android:id="@+id/ic_action_content_undo"
+            android:title="@string/undo"
+            android:icon="@drawable/ic_action_content_undo"
+            android:showAsAction="always"
+            />
     <item   android:id="@+id/action_clear_drawing"
             android:title="@string/clear"
             android:icon="@drawable/ic_action_content_discard"
             android:showAsAction="ifRoom"
             />
-
 
 </menu>

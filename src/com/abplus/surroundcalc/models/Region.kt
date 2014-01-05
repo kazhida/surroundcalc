@@ -5,6 +5,7 @@ import android.graphics.RectF
 import com.abplus.surroundcalc.models.Stroke.Side
 import android.graphics.Matrix
 import android.graphics.Path
+import java.util.ArrayList
 
 /**
  * Created by kazhida on 2014/01/02.
@@ -26,7 +27,7 @@ class Region(stroke: Stroke) : Pickable() {
     }(stroke)
 
     private val stroke = stroke
-    private var pickedPoint: PointF? = null
+    public val labels: MutableList<ValueLabel> = ArrayList<ValueLabel>()
 
     private fun insideBounds(p: PointF): Boolean {
         val bounds = RectF()
@@ -34,7 +35,7 @@ class Region(stroke: Stroke) : Pickable() {
         return bounds.left <= p.x && p.x <= bounds.right && bounds.top <= p.y && p.y <= bounds.bottom;
     }
 
-    override public fun picked(p: PointF) : Boolean {
+    override protected fun isInside(p: PointF): Boolean {
         if (insideBounds(p)) {
             //            var side = Side.UNKNOWN
             //            for (segment in stroke) {
@@ -45,7 +46,6 @@ class Region(stroke: Stroke) : Pickable() {
             //                    if (side2 != Side.UNKNOWN && side2 != side) return false
             //                }
             //            }
-            pickedPoint = PointF(p.x, p.y)
             return true
         } else {
             return false
@@ -53,10 +53,30 @@ class Region(stroke: Stroke) : Pickable() {
     }
 
     override public fun moveTo(p: PointF) : Unit {
-        if (pickedPoint != null) {
-            val matrix = Matrix();
-            matrix.setTranslate(p.x - pickedPoint!!.x, p.y - pickedPoint!!.y)
-            path.transform(matrix)
+        val matrix = Matrix();
+        matrix.setTranslate(p.x - pickedPoint.x, p.y - pickedPoint.y)
+        path.transform(matrix)
+    }
+
+    public fun bind(label: ValueLabel): Region {
+        if (! labels.contains(label) && isInside(label.centerPoint)) {
+            labels.add(label)
         }
+        return this
+    }
+
+    public fun bind(labels: List<ValueLabel>): Region {
+        for (label in labels) bind(label)
+        return this
+    }
+
+    public fun unbind(label: ValueLabel): Region {
+        labels.remove(label)
+        return this
+    }
+
+    public fun unbind() : Region {
+        labels.clear()
+        return this
     }
 }

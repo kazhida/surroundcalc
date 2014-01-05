@@ -20,6 +20,8 @@ import com.abplus.surroundcalc.models.ValueLabel
 import android.widget.TextView
 import android.graphics.Rect
 import android.util.Log
+import android.widget.PopupMenu
+import android.graphics.Point
 
 /**
  * Created by kazhida on 2014/01/02.
@@ -37,7 +39,7 @@ class DoodleActivity : Activity() {
         uninitializedDoodleView = (findViewById(R.id.doddle_view) as DoodleView)
 
         doodleView.setOnClickListener {
-            val selected = doodleView.getSelected()
+            val selected = doodleView.getPicked()
             if (selected is Region) {
                 showMenu(selected)
             } else if (selected is ValueLabel) {
@@ -47,10 +49,10 @@ class DoodleActivity : Activity() {
             }
         }
 
-        val tenkeyMask = findViewById(R.id.mask)
-        tenkeyMask?.setOnClickListener {
-            dismissTenkey()
-        }
+//        val tenkeyMask = findViewById(R.id.mask)
+//        tenkeyMask?.setOnClickListener {
+//            dismissTenkey()
+//        }
 
         val actionBar = getActionBar()!!
         addTab(actionBar, Drawing.KeyColor.BLUE, true)
@@ -131,20 +133,73 @@ class DoodleActivity : Activity() {
         override fun onTabReselected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {}
     }
 
-    private fun showMenu(region: Region): Unit {
+    private fun popupLocation(popup: PopupWindow): Point {
+        val offset = topInGlobal(doodleView)
+        Log.d("surroundcalc", "H=" + heightInGlobal(doodleView) + " h=" + doodleView.getHeight() + " offset=" + offset)
 
+        val w = doodleView.getWidth() - popup.getWidth()
+        val h = doodleView.getHeight() - popup.getHeight() + offset
+
+        val x: Int = Math.min(doodleView.getTapped().x.toInt(), w)
+        val y: Int = Math.min(doodleView.getTapped().y.toInt(), h)
+
+        return Point(x, y + offset)
+    }
+
+
+    private fun showMenu(region: Region): Unit {
+        val view = when (region.labels.size) {
+            1-> createMenu1()
+            2 -> createMenu2()
+            else -> createMenuN()
+        }
+        val wrap = ViewGroup.LayoutParams.WRAP_CONTENT
+
+        val popup = PopupWindow(this)
+        popup.setWindowLayoutMode(wrap, wrap)
+        popup.setContentView(view)
+        popup.setOutsideTouchable(true)
+        popup.setFocusable(true)
+
+        val p = popupLocation(popup)
+        popup.showAtLocation(doodleView, Gravity.LEFT + Gravity.TOP, p.x, p.y)
+    }
+
+    private fun createMenu1(): View {
+        val view = getLayoutInflater().inflate(R.layout.calc_1, null, false)
+
+
+        return view!!
+    }
+
+    private fun createMenu2(): View {
+        val view = getLayoutInflater().inflate(R.layout.calc_2, null, false)
+
+
+        return view!!
+    }
+
+    private fun createMenuN(): View {
+        val view = getLayoutInflater().inflate(R.layout.calc_n, null, false)
+
+
+        return view!!
     }
 
     private fun showTenkey(label: ValueLabel?): Unit {
-        val mask = findViewById(R.id.mask)
-        mask!!.setVisibility(View.VISIBLE)
+//        val mask = findViewById(R.id.mask)
+//        mask!!.setVisibility(View.VISIBLE)
 
-        val view = getLayoutInflater().inflate(R.layout.tenkey, null, false);
+        val view = getLayoutInflater().inflate(R.layout.tenkey, null, false)!!
         val wrap = ViewGroup.LayoutParams.WRAP_CONTENT
 
-        view!!.setLayoutParams(ViewGroup.LayoutParams(wrap, wrap))
-        tenkey = PopupWindow(view, wrap, wrap, false)
+//        view!!.setLayoutParams(ViewGroup.LayoutParams(wrap, wrap))
+        tenkey = PopupWindow(this)
+        tenkey!!.setWindowLayoutMode(wrap, wrap)
+        tenkey!!.setContentView(view)
         tenkey!!.setOutsideTouchable(true)
+        tenkey!!.setFocusable(true)
+
         view.findViewById(R.id.key_0)?.setOnClickListener(NumberListener(0))
         view.findViewById(R.id.key_1)?.setOnClickListener(NumberListener(1))
         view.findViewById(R.id.key_2)?.setOnClickListener(NumberListener(2))
@@ -176,15 +231,9 @@ class DoodleActivity : Activity() {
             text?.setText("0")
         }
 
-        Log.d("surroundcalc", "H=" + heightInGlobal(doodleView) + " h=" + doodleView.getHeight())
-        val w = doodleView.getWidth() - view.getWidth()
-        val h = doodleView.getHeight() - view.getHeight()
-        val x: Int = Math.min(doodleView.getTapped().x.toInt(), w)
-        val y: Int = Math.min(doodleView.getTapped().y.toInt(), h)
+        val p = popupLocation(tenkey!!)
 
-        val offset = topInGlobal(doodleView)
-
-        tenkey?.showAtLocation(doodleView, Gravity.LEFT + Gravity.TOP, x, y + offset)
+        tenkey!!.showAtLocation(doodleView, Gravity.LEFT + Gravity.TOP, p.x, p.y)
     }
 
     private fun topInGlobal(view: View): Int {
@@ -202,7 +251,7 @@ class DoodleActivity : Activity() {
     private fun dismissTenkey() {
         tenkey?.dismiss()
         tenkey = null
-        findViewById(R.id.mask)?.setVisibility(View.GONE)
+//        findViewById(R.id.mask)?.setVisibility(View.GONE)
         doodleView.redraw()
     }
 

@@ -22,7 +22,7 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
     private Drawing drawing;
 
     @Nullable
-    private Pickable selected;
+    private Pickable picked;
 
     @Nullable
     private Pickable hover;
@@ -32,6 +32,8 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
 
     @Nullable
     private Stroke stroke;
+
+    private int moveCount;
 
     @NotNull
     private Drawer drawer = new Drawer();
@@ -83,50 +85,50 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                moveCount = 0;
                 tapped = new PointF(p.x, p.y);
                 if (drawing != null) {
-                    selected = drawing.pick(tapped);
+                    picked = drawing.pick(tapped);
                 }
-                if (selected == null) {
+                if (picked == null) {
                     stroke = new Stroke(tapped, null);
                 }
                 redraw();
                 return true;
             case MotionEvent.ACTION_MOVE:
-
-                if (selected != null) {
-                    selected.moveTo(p);
+                moveCount++;
+                if (picked != null) {
+                    picked.moveTo(p);
                     if (drawing != null) {
+                        drawing.unbind(picked);
                         hover = drawing.pick(p);
                     }
-                } else if (stroke != null) {
+                }
+                if (stroke != null) {
                     stroke = new Stroke(p, stroke);
                 }
                 redraw();
                 return true;
             case MotionEvent.ACTION_UP:
-                if (selected != null) {
-                    selected.moveTo(p);
-                } else if (stroke != null) {
-                    if (stroke.isEmpty()) {
-                        long pressed = event.getEventTime() - event.getDownTime();
-                        if (pressed < ViewConfiguration.getLongPressTimeout()) {
-                            if (selected == null) {
-                                callOnClick();
-                            }
-                        } else {
-                            if (selected == null) {
-                                performLongClick();
-                            }
-                        }
-                    } else if (drawing != null) {
-                        Log.d("SurroundCALC", "DETECT");
-                        drawing.detect(stroke);
-                        Log.d("SurroundCALC", "DETECT done");
+                if (moveCount < 2) {
+                    if (picked != null && drawing != null) {
+                        drawing.bind(picked);
                     }
+                    long pressed = event.getEventTime() - event.getDownTime();
+                    if (pressed < ViewConfiguration.getLongPressTimeout()) {
+                        callOnClick();
+                    } else {
+                        performLongClick();
+                    }
+                } else if (picked != null) {
+                    picked.moveTo(p);
+                } else if (stroke != null && drawing != null) {
+                    Log.d("SurroundCALC", "DETECT");
+                    drawing.detect(stroke);
+                    Log.d("SurroundCALC", "DETECT done");
                 }
                 stroke = null;
-                selected = null;
+                picked = null;
                 hover = null;
                 redraw();
                 return true;
@@ -184,8 +186,8 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
     }
 
     @Nullable
-    public Pickable getSelected() {
-        return selected;
+    public Pickable getPicked() {
+        return picked;
     }
 
     private class Drawer {
@@ -246,25 +248,16 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
             redraw();
         }
 
-        private int id(Pickable region) {
-            if (region == null) {
-                return 0;
-            } else {
-                return region.getId();
-            }
-        }
-
         void draw(Canvas canvas) {
             canvas.drawColor(background);
 
             if (drawing != null) {
                 //  リージョン
                 for (Region region: drawing.getRegions()) {
-                    if (region == selected || region == hover) {
-                        Log.d("surroundcalc", "highlighted:" + id(region) + "," + id(selected) + "," + id(hover));
-                        regionPaint.setAlpha(153);
-                    } else {
+                    if (region == picked || region == hover) {
                         regionPaint.setAlpha(255);
+                    } else {
+                        regionPaint.setAlpha(153);
                     }
                     canvas.drawPath(region.getPath(), regionPaint);
                 }

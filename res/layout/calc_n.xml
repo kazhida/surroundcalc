@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:background="@color/bg_menu"
+        >
+
+    <TextView
+            android:id="@+id/func_sum"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/result"
+            android:textSize="8pt"
+            android:textColor="@color/textColor"
+            android:gravity="right|center_vertical"
+            android:drawableLeft="@drawable/func_sum"
+            />
+
+    <TextView
+            android:id="@+id/func_varp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/result"
+            android:textSize="8pt"
+            android:textColor="@color/textColor"
+            android:gravity="right|center_vertical"
+            android:drawableLeft="@drawable/func_varp"
+            />
+
+    <TextView
+            android:id="@+id/func_var"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/result"
+            android:textSize="8pt"
+            android:textColor="@color/textColor"
+            android:gravity="right|center_vertical"
+            android:drawableLeft="@drawable/func_var"
+            />
+</LinearLayout>
