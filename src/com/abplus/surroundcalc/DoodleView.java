@@ -292,6 +292,11 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
                     }
                     canvas.drawPath(region.getPath(), regionPaint);
                 }
+                //  リージョン
+                strokePaint.setAlpha(72);
+                for (Region region: drawing.getRegions()) {
+                    canvas.drawPath(region.getPath(), strokePaint);
+                }
                 //  ラベル
                 for (ValueLabel label: drawing.getValueLabels()) {
                     PointF center = label.getCenterPoint();
