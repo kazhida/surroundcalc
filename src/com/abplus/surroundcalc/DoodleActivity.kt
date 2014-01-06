@@ -24,6 +24,13 @@ import android.widget.PopupMenu
 import android.graphics.Point
 import android.widget.RelativeLayout
 import android.graphics.PointF
+import com.google.ads.AdView
+import com.google.ads.AdSize
+import android.widget.FrameLayout
+import com.google.ads.AdRequest
+import com.google.ads.InterstitialAd
+import com.google.ads.AdListener
+import com.google.ads.Ad
 
 /**
  * Created by kazhida on 2014/01/02.
@@ -33,6 +40,8 @@ class DoodleActivity : Activity() {
     var uninitializedDoodleView : DoodleView? = null
     val doodleView : DoodleView get() = uninitializedDoodleView!!
     var tenkey: PopupWindow? = null
+    var adView: AdView? = null
+    var interstitial: InterstitialAd? = null
 
     protected override fun onCreate(savedInstanceState: Bundle?) : Unit {
         super.onCreate(savedInstanceState)
@@ -57,6 +66,34 @@ class DoodleActivity : Activity() {
         addTab(actionBar, Drawing.KeyColor.RED, false)
         addTab(actionBar, Drawing.KeyColor.YELLOW, false)
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS)
+
+        adView = AdView(this, AdSize.BANNER, getString(R.string.banner_unit_id))
+        val params = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        adView!!.setLayoutParams(params)
+        val frame = (findViewById(R.id.ad_frame) as FrameLayout)
+        frame.addView(adView!!)
+        adView!!.loadAd(AdRequest())
+
+        interstitial = InterstitialAd(this, getString(R.string.interstitial_unit_id))
+        interstitial?.loadAd(AdRequest());
+        interstitial?.setAdListener(object: AdListener{
+            override fun onReceiveAd(p0: Ad?) {
+                Log.d("surroundcalc", "Received")
+            }
+            override fun onFailedToReceiveAd(p0: Ad?, p1: AdRequest.ErrorCode?) {
+                Log.d("surroundcalc", "Failed")
+            }
+            override fun onPresentScreen(p0: Ad?) {
+                Log.d("surroundcalc", "PresentScreen")
+            }
+            override fun onDismissScreen(p0: Ad?) {
+                Log.d("surroundcalc", "DismissScreen")
+                interstitial?.loadAd(AdRequest())
+            }
+            override fun onLeaveApplication(p0: Ad?) {
+                Log.d("surroundcalc", "LeaveApplication")
+            }
+        });
     }
 
     private fun addTab(actionBar : ActionBar, keyColor : Drawing.KeyColor, selected : Boolean) : Unit {
@@ -127,6 +164,7 @@ class DoodleActivity : Activity() {
         override fun onTabSelected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {
             val drawing = (tab?.getTag() as Drawing)
             doodleView.setDrawing(drawing)
+            interstitial?.show()
         }
         override fun onTabUnselected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {}
         override fun onTabReselected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {}
