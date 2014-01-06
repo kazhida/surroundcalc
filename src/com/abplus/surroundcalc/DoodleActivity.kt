@@ -31,6 +31,7 @@ import com.google.ads.AdRequest
 import com.google.ads.InterstitialAd
 import com.google.ads.AdListener
 import com.google.ads.Ad
+import android.os.Handler
 
 /**
  * Created by kazhida on 2014/01/02.
@@ -42,6 +43,7 @@ class DoodleActivity : Activity() {
     var tenkey: PopupWindow? = null
     var adView: AdView? = null
     var interstitial: InterstitialAd? = null
+    val handler = Handler()
 
     protected override fun onCreate(savedInstanceState: Bundle?) : Unit {
         super.onCreate(savedInstanceState)
@@ -190,6 +192,7 @@ class DoodleActivity : Activity() {
         params.setMargins(x, y, 0, 0)
 
         view.setLayoutParams(params)
+        view.invalidate()
     }
 
     private fun initMenuItem(menu: Menu, id: Int, value: Double, prefix: String) {
@@ -216,7 +219,7 @@ class DoodleActivity : Activity() {
 
         initMenuItem(menu, R.id.ope_neg,     neg,  "-")
         initMenuItem(menu, R.id.func_square, x2,   "x2")
-        initMenuItem(menu, R.id.func_sqrt,   sqrt, "sqrt")
+        initMenuItem(menu, R.id.func_sqrt,   sqrt, "√")
 
         popupMenu.setOnMenuItemClickListener {
             when (it?.getItemId()) {
@@ -355,7 +358,9 @@ class DoodleActivity : Activity() {
         val anchor = findViewById(R.id.popup_anchor)!!
         setViewMargin(anchor, PointF(0.0f, 0.0f))
 
-        tenkey!!.showAsDropDown(anchor, doodleView.getWidth(), 0)
+        handler.post {
+            tenkey!!.showAsDropDown(anchor, doodleView.getWidth(), 0)
+        }
     }
 
     private fun getValueText(): TextView? {
