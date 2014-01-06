@@ -28,10 +28,10 @@ class ValueLabel(center: PointF, value: Double, val paint: Paint): Pickable() {
             val w = rect.right - rect.left
             val h = rect.bottom - rect.top
 
-            result.top = center.y - h / 2
+            result.top = center.y - h
             result.left = center.x - w / 2
             result.right = center.x + w /2
-            result.bottom = center.y + h / 2
+            result.bottom = center.y
 
             return result
         }

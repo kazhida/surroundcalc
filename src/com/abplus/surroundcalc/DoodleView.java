@@ -20,17 +20,14 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
 
     @Nullable
     private Drawing drawing;
-
     @Nullable
     private Pickable picked;
-
     @Nullable
     private Pickable hover;
-
+    @Nullable
+    private ValueLabel resultLabel;
     @Nullable
     private PointF tapped;
-
-
     @Nullable
     private Stroke stroke;
 
@@ -92,7 +89,7 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
                 if (drawing != null && picked == null) {
                     picked = drawing.pick(tapped);
                 }
-                if (picked == null) {
+                if (picked == null || picked == resultLabel) {
                     stroke = new Stroke(tapped, null);
                 }
                 redraw();
@@ -122,16 +119,21 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
                     } else {
                         performLongClick();
                     }
-                } else if (picked != null) {
-                    picked.moveTo(p);
-                } else if (stroke != null && drawing != null) {
-                    Log.d("SurroundCALC", "DETECT");
-                    drawing.detect(stroke);
-                    Log.d("SurroundCALC", "DETECT done");
+                } else {
+                    if (picked != null && drawing != null) {
+                        picked.moveTo(p);
+                        drawing.bind(picked);
+                    }
+                    if (stroke != null && drawing != null) {
+                        Log.d("SurroundCALC", "DETECT");
+                        drawing.detect(stroke);
+                        Log.d("SurroundCALC", "DETECT done");
+                    }
                 }
                 stroke = null;
                 picked = null;
                 hover = null;
+                resultLabel = null;
                 redraw();
                 return true;
             default:
@@ -179,7 +181,9 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
     }
 
     public void addResultLabel(@NotNull PointF point, double value) {
-        addLabel(point, value);
+        if (drawing != null) {
+            resultLabel = drawing.addLabel(point, value, drawer.valuePaint);
+        }
     }
 
     @NotNull
@@ -284,7 +288,7 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
                     if (region == picked || region == hover) {
                         regionPaint.setAlpha(255);
                     } else {
-                        regionPaint.setAlpha(153);
+                        regionPaint.setAlpha(102);
                     }
                     canvas.drawPath(region.getPath(), regionPaint);
                 }
