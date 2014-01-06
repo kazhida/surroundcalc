@@ -95,7 +95,9 @@ class Drawing private (val keyColor: Drawing.KeyColor) {
     }
 
     public fun undo() : Unit {
-        freeHands.remove(freeHands.size() - 1)
+        if (!freeHands.isEmpty()) {
+            freeHands.remove(freeHands.size() - 1)
+        }
     }
 
     public class object {

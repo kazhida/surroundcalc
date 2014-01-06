@@ -53,9 +53,11 @@ class Region(stroke: Stroke) : Pickable() {
     }
 
     override public fun moveTo(p: PointF) : Unit {
-//        val matrix = Matrix();
-//        matrix.setTranslate(p.x - pickedPoint.x, p.y - pickedPoint.y)
-//        path.transform(matrix)
+        val matrix = Matrix();
+        matrix.setTranslate(p.x - pickedPoint.x, p.y - pickedPoint.y)
+        path.transform(matrix)
+        pickedPoint.x = p.x
+        pickedPoint.y = p.y
     }
 
     public fun bind(label: ValueLabel): Region {
