@@ -910,15 +910,11 @@ public class BillingHelper {
         }
     }
 
-    public void savePurchaseForNoAd(int value) {
+    public void savePurchase(String sku, int value) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt(context.getString(R.string.key_purchased), value);
+        editor.putInt(sku, value);
         editor.commit();
-    }
-
-    public void savePurchaseForNoAd() {
-        savePurchaseForNoAd(1);
     }
 }
 

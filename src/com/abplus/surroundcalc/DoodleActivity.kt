@@ -33,6 +33,10 @@ import com.google.ads.AdListener
 import com.google.ads.Ad
 import android.os.Handler
 import com.abplus.surroundcalc.exporters.ActionSender
+import com.abplus.surroundcalc.utls.Purchases
+import com.abplus.surroundcalc.billing.BillingHelper
+import android.app.AlertDialog
+import android.content.DialogInterface
 
 /**
  * Created by kazhida on 2014/01/02.
@@ -99,33 +103,6 @@ class DoodleActivity : Activity() {
         });
     }
 
-    private fun addTab(actionBar : ActionBar, keyColor : Drawing.KeyColor, selected : Boolean) : Unit {
-        val tab = actionBar.newTab()
-        val resId = when (keyColor) {
-            Drawing.KeyColor.BLUE -> {
-                R.string.blue
-            }
-            Drawing.KeyColor.GREEN -> {
-                R.string.green
-            }
-            Drawing.KeyColor.RED -> {
-                R.string.red
-            }
-            Drawing.KeyColor.YELLOW -> {
-                R.string.yellow
-            }
-        }
-        val drawing = Drawing.holder.get(keyColor)
-        tab.setText(resId)
-        tab.setTabListener(TabListener())
-        tab.setTag(drawing)
-        actionBar.addTab(tab, selected)
-
-        if (selected) {
-            doodleView.setDrawing(drawing)
-        }
-
-    }
     public override fun onResume() : Unit {
         super.onResume()
 
@@ -136,6 +113,30 @@ class DoodleActivity : Activity() {
             val tab = actionBar.getTabAt(keyColor.ordinal());
             actionBar.selectTab(tab)
         }
+
+
+        val purchases = Purchases(this)
+
+        if (purchases.storedPurchased(getString(R.string.sku_basic))) {
+            findViewById(R.id.ad_frame)?.setVisibility(View.GONE)
+        } else {
+            findViewById(R.id.ad_frame)?.setVisibility(View.VISIBLE)
+        }
+        purchases.checkState(object: BillingHelper.OnSetupFinishedListener {
+            override fun onSetupFinished(result: BillingHelper.Result?) {
+                if (result!!.isFailure()) {
+                    Log.d("surroundcalc", "Setup failed.")
+                    findViewById(R.id.ad_frame)?.setVisibility(View.VISIBLE)
+                } else {
+                    Log.d("surroundcalc", "Setup successful. Querying inventory.")
+                    if (purchases.hasPurchase(getString(R.string.sku_basic))) {
+                        findViewById(R.id.ad_frame)?.setVisibility(View.GONE)
+                    } else {
+                        findViewById(R.id.ad_frame)?.setVisibility(View.VISIBLE)
+                    }
+                }
+            }
+        })
     }
 
     public override fun onPause() : Unit {
@@ -161,10 +162,58 @@ class DoodleActivity : Activity() {
                 true
             }
             R.id.action_social_share -> {
-                ActionSender().startActivity(this, doodleView.createBitmap())
+                if (noAd) {
+                    ActionSender().startActivity(this, doodleView.createBitmap())
+                } else {
+                    val builder = AlertDialog.Builder(this)
+                    builder.setTitle(R.string.upgrade_title)
+                    builder.setMessage(R.string.upgrade_message)
+                    builder.setPositiveButton(R.string.upgrade) {(dialog: DialogInterface, which: Int) ->
+                        Purchases(this).purchase(this, getString(R.string.sku_basic), object : Runnable {
+                            override fun run() {
+                                findViewById(R.id.ad_frame)?.setVisibility(View.GONE)
+                            }
+                        })
+                    }
+                    builder.setNegativeButton(R.string.close, null)
+                    builder.setCancelable(true)
+                    builder.create().show()
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private val noAd: Boolean
+        get() {
+            return findViewById(R.id.ad_frame)?.getVisibility() == View.GONE
+        }
+
+    private fun addTab(actionBar : ActionBar, keyColor : Drawing.KeyColor, selected : Boolean) : Unit {
+        val tab = actionBar.newTab()
+        val resId = when (keyColor) {
+            Drawing.KeyColor.BLUE -> {
+                R.string.blue
+            }
+            Drawing.KeyColor.GREEN -> {
+                R.string.green
+            }
+            Drawing.KeyColor.RED -> {
+                R.string.red
+            }
+            Drawing.KeyColor.YELLOW -> {
+                R.string.yellow
+            }
+        }
+        val drawing = Drawing.holder.get(keyColor)
+        tab.setText(resId)
+        tab.setTabListener(TabListener())
+        tab.setTag(drawing)
+        actionBar.addTab(tab, selected)
+
+        if (selected) {
+            doodleView.setDrawing(drawing)
         }
     }
 
@@ -172,7 +221,9 @@ class DoodleActivity : Activity() {
         override fun onTabSelected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {
             val drawing = (tab?.getTag() as Drawing)
             doodleView.setDrawing(drawing)
-            interstitial?.show()
+            if (! noAd) {
+                interstitial?.show()
+            }
         }
         override fun onTabUnselected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {}
         override fun onTabReselected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {}

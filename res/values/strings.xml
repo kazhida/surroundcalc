@@ -13,6 +13,7 @@
     <string name="more">……</string>
     <string name="cancel">Cancel</string>
     <string name="share">Share</string>
+    <string name="close">Close</string>
 
     <string name="n0">0</string>
     <string name="n1">1</string>
@@ -30,8 +31,11 @@
     <string name="ca">CA</string>
     <string name="neg">+/-</string>
 
-    <string name="key_purchased">KEY_PURCHASED</string>
+    <string name="sku_basic">sku_basic</string>
     <string name="billing_service_unavailable">Billing service unavailable</string>
-    <string name="sku_basic">basic</string>
+
+    <string name="upgrade_title">Upgrade</string>
+    <string name="upgrade_message">In order to use a share function, it is necessary to upgrade to the charged version (300JPY).\nUpgrade stops also displaying an advertisement.</string>
+    <string name="upgrade">UPGRADE!</string>
 
 </resources>
