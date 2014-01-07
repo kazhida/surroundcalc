@@ -2,7 +2,7 @@
 
 <menu   xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item   android:id="@+id/ic_action_content_undo"
+    <item   android:id="@+id/action_content_undo"
             android:title="@string/undo"
             android:icon="@drawable/ic_action_content_undo"
             android:showAsAction="always"
@@ -13,4 +13,9 @@
             android:showAsAction="ifRoom"
             />
 
+    <item   android:id="@+id/action_social_share"
+            android:title="@string/share"
+            android:icon="@drawable/ic_action_social_share"
+            android:showAsAction="ifRoom"
+            />
 </menu>

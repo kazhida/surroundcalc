@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">囲ってCALC</string>
+
     <string name="undo">アンドゥ</string>
     <string name="clear">消去</string>
     <string name="result">結果</string>
     <string name="cancel">キャンセル</string>
+    <string name="share">共有</string>
+
+    <string name="billing_service_unavailable">この端末ではアプリ内課金が使えません。</string>
 </resources>

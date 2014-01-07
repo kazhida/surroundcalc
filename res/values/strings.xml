@@ -12,6 +12,7 @@
     <string name="result">Result</string>
     <string name="more">……</string>
     <string name="cancel">Cancel</string>
+    <string name="share">Share</string>
 
     <string name="n0">0</string>
     <string name="n1">1</string>
@@ -28,5 +29,9 @@
     <string name="bs">BS</string>
     <string name="ca">CA</string>
     <string name="neg">+/-</string>
+
+    <string name="key_purchased">KEY_PURCHASED</string>
+    <string name="billing_service_unavailable">Billing service unavailable</string>
+    <string name="sku_basic">basic</string>
 
 </resources>

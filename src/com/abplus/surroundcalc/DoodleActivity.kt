@@ -32,6 +32,7 @@ import com.google.ads.InterstitialAd
 import com.google.ads.AdListener
 import com.google.ads.Ad
 import android.os.Handler
+import com.abplus.surroundcalc.exporters.ActionSender
 
 /**
  * Created by kazhida on 2014/01/02.
@@ -145,6 +146,7 @@ class DoodleActivity : Activity() {
     public override fun onCreateOptionsMenu(menu : Menu?) : Boolean {
         val inflater = getMenuInflater()
         inflater.inflate(R.menu.actions, menu)
+
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -154,8 +156,12 @@ class DoodleActivity : Activity() {
                 doodleView.clear()
                 true
             }
-            R.id.ic_action_content_undo -> {
+            R.id.action_content_undo -> {
                 doodleView.undo()
+                true
+            }
+            R.id.action_social_share -> {
+                ActionSender().startActivity(this, doodleView.createBitmap())
                 true
             }
             else -> super.onOptionsItemSelected(item)

@@ -216,6 +216,14 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
         mark = false;
     }
 
+    @NotNull
+    public Bitmap createBitmap() {
+        Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawer.draw(canvas);
+        return bitmap;
+    }
+
     private class Drawer {
 
         private Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
