@@ -10,7 +10,7 @@ import com.abplus.surroundcalc.billing.BillingHelper.OnPurchaseFinishedListener
 /**
  * Created by kazhida on 2014/01/07.
  */
-class Purchases(val context: Context) {
+class Purchases private (val context: Context) {
 
     enum class State {
         UNKNOWN
@@ -18,7 +18,7 @@ class Purchases(val context: Context) {
         NOT_PURCHASED
     }
 
-    val billingHelper = BillingHelper(context)
+    public val billingHelper: BillingHelper = BillingHelper(context)
 
     public fun checkState(listener: BillingHelper.OnSetupFinishedListener): Unit {
         billingHelper.startSetup(listener)
@@ -44,7 +44,8 @@ class Purchases(val context: Context) {
 
     public fun storedPurchased(sku: String): Boolean {
         val preferences = PreferenceManager.getDefaultSharedPreferences(context)!!
-        return preferences.getInt(sku, -1) != -1
+        val purchased = preferences.getInt(sku, -1)
+        return purchased < 0
     }
 
     public fun purchase(activity: Activity, sku: String, runnable: Runnable): Unit {
@@ -59,6 +60,18 @@ class Purchases(val context: Context) {
                     runnable.run()
                 }
             }
+        }
+    }
+
+    class object {
+        private var shared: Purchases? = null
+
+        public fun initInstance(context: Context): Unit {
+            shared = Purchases(context)
+        }
+
+        public fun sharedInstance(): Purchases {
+            return shared!!
         }
     }
 }

@@ -37,6 +37,7 @@ import com.abplus.surroundcalc.utls.Purchases
 import com.abplus.surroundcalc.billing.BillingHelper
 import android.app.AlertDialog
 import android.content.DialogInterface
+import android.content.Intent
 
 /**
  * Created by kazhida on 2014/01/02.
@@ -66,6 +67,8 @@ class DoodleActivity : Activity() {
                 showTenkey(null)
             }
         }
+
+        Purchases.initInstance(this)
 
         val actionBar = getActionBar()!!
         addTab(actionBar, Drawing.KeyColor.BLUE, true)
@@ -115,7 +118,7 @@ class DoodleActivity : Activity() {
         }
 
 
-        val purchases = Purchases(this)
+        val purchases = Purchases.sharedInstance()
 
         if (purchases.storedPurchased(getString(R.string.sku_basic))) {
             findViewById(R.id.ad_frame)?.setVisibility(View.GONE)
@@ -137,6 +140,12 @@ class DoodleActivity : Activity() {
                 }
             }
         })
+    }
+
+    protected override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) : Unit {
+        if (! Purchases.sharedInstance().billingHelper.handleActivityResult(requestCode, resultCode, data)) {
+            super.onActivityResult(requestCode, resultCode, data)
+        }
     }
 
     public override fun onPause() : Unit {
@@ -169,7 +178,7 @@ class DoodleActivity : Activity() {
                     builder.setTitle(R.string.upgrade_title)
                     builder.setMessage(R.string.upgrade_message)
                     builder.setPositiveButton(R.string.upgrade) {(dialog: DialogInterface, which: Int) ->
-                        Purchases(this).purchase(this, getString(R.string.sku_basic), object : Runnable {
+                        Purchases.sharedInstance().purchase(this, getString(R.string.sku_basic), object : Runnable {
                             override fun run() {
                                 findViewById(R.id.ad_frame)?.setVisibility(View.GONE)
                             }
