@@ -247,7 +247,7 @@ public final class DoodleView extends SurfaceView implements SurfaceHolder.Callb
             valuePaint.setTextSize(24.0f * density);
 
             markerPaint.setStyle(Paint.Style.STROKE);
-            markerPaint.setColor(Color.RED);
+            markerPaint.setColor(getColor(R.color.bg_mark));
             markerPaint.setStrokeWidth(1.0f * density);
         }
 

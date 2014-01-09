@@ -6,46 +6,35 @@ import android.util.Log
 import android.preference.PreferenceManager
 import android.app.Activity
 import com.abplus.surroundcalc.billing.BillingHelper.OnPurchaseFinishedListener
+import com.abplus.surroundcalc.billing.BillingHelper.Result
+import com.abplus.surroundcalc.billing.BillingHelper.Inventory
 
 /**
  * Created by kazhida on 2014/01/07.
  */
-class Purchases private (val context: Context) {
-
-    enum class State {
-        UNKNOWN
-        PURCHASED
-        NOT_PURCHASED
-    }
+class Purchases (val context: Context) {
 
     public val billingHelper: BillingHelper = BillingHelper(context)
 
-    public fun checkState(listener: BillingHelper.OnSetupFinishedListener): Unit {
-        billingHelper.startSetup(listener)
-    }
-
-    public fun hasPurchase(sku: String): Boolean {
-        try {
-            val inventory = billingHelper.queryInventory(false)!!
-            Log.d("surrountcalc", "Query inventory was successful.")
-            val no_ad = inventory.hasPurchase(sku)
-            if (no_ad) {
-                billingHelper.savePurchase(sku, 1)
-                return true
-            } else {
-                billingHelper.savePurchase(sku, -1)
-                return false
+    public fun checkState(sku: String, listener: BillingHelper.QueryInventoryFinishedListener): Unit {
+        billingHelper.startSetup {
+            if (it!!.isSuccess()) {
+                val inventory = billingHelper.queryInventory(false)
+                if (inventory!!.hasPurchase(sku)) {
+                    billingHelper.savePurchase(sku, 1)
+                } else {
+                    billingHelper.savePurchase(sku, -1)
+                }
+                listener.onQueryInventoryFinished(it, inventory)
             }
-        } catch (e : BillingHelper.BillingException) {
-            billingHelper.savePurchase(sku, -1)
-            return false
         }
     }
 
-    public fun storedPurchased(sku: String): Boolean {
+    public fun isPurchased(sku: String): Boolean {
         val preferences = PreferenceManager.getDefaultSharedPreferences(context)!!
-        val purchased = preferences.getInt(sku, -1)
-        return purchased < 0
+        val purchased = preferences.getInt(sku, 0)
+        Log.d("surroudcalc", "SKU:" + sku + "(" + purchased.toString() + ")")
+        return purchased > 0
     }
 
     public fun purchase(activity: Activity, sku: String, runnable: Runnable): Unit {
@@ -60,18 +49,6 @@ class Purchases private (val context: Context) {
                     runnable.run()
                 }
             }
-        }
-    }
-
-    class object {
-        private var shared: Purchases? = null
-
-        public fun initInstance(context: Context): Unit {
-            shared = Purchases(context)
-        }
-
-        public fun sharedInstance(): Purchases {
-            return shared!!
         }
     }
 }

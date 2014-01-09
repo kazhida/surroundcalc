@@ -38,27 +38,30 @@ import com.abplus.surroundcalc.billing.BillingHelper
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import com.abplus.surroundcalc.billing.BillingHelper.Result
+import android.widget.Toast
 
 /**
  * Created by kazhida on 2014/01/02.
  */
 class DoodleActivity : Activity() {
 
-    var uninitializedDoodleView : DoodleView? = null
-    val doodleView : DoodleView get() = uninitializedDoodleView!!
+    var doodleView: DoodleView? = null
     var tenkey: PopupWindow? = null
     var adView: AdView? = null
     var interstitial: InterstitialAd? = null
     val handler = Handler()
+    var purchases: Purchases? = null
+    val sku_basic: String get() = getString(R.string.sku_basic)
 
     protected override fun onCreate(savedInstanceState: Bundle?) : Unit {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.main)
-        uninitializedDoodleView = (findViewById(R.id.doddle_view) as DoodleView)
+        doodleView = (findViewById(R.id.doddle_view) as DoodleView)
 
-        doodleView.setOnClickListener {
-            val selected = doodleView.getPicked()
+        doodleView!!.setOnClickListener {
+            val selected = doodleView!!.getPicked()
             if (selected is Region) {
                 showMenu(selected)
             } else if (selected is ValueLabel) {
@@ -68,7 +71,7 @@ class DoodleActivity : Activity() {
             }
         }
 
-        Purchases.initInstance(this)
+        purchases = Purchases(this)
 
         val actionBar = getActionBar()!!
         addTab(actionBar, Drawing.KeyColor.BLUE, true)
@@ -82,7 +85,6 @@ class DoodleActivity : Activity() {
         adView!!.setLayoutParams(params)
         val frame = (findViewById(R.id.ad_frame) as FrameLayout)
         frame.addView(adView!!)
-        adView!!.loadAd(AdRequest())
 
         interstitial = InterstitialAd(this, getString(R.string.interstitial_unit_id))
         interstitial?.loadAd(AdRequest());
@@ -109,6 +111,8 @@ class DoodleActivity : Activity() {
     public override fun onResume() : Unit {
         super.onResume()
 
+        adView?.loadAd(AdRequest())
+
         val keyColor = Preferences(this).currentColor
 
         if (keyColor != null) {
@@ -117,40 +121,47 @@ class DoodleActivity : Activity() {
             actionBar.selectTab(tab)
         }
 
-
-        val purchases = Purchases.sharedInstance()
-
-        if (purchases.storedPurchased(getString(R.string.sku_basic))) {
+        if (purchases!!.isPurchased(sku_basic)){
             findViewById(R.id.ad_frame)?.setVisibility(View.GONE)
-        } else {
-            findViewById(R.id.ad_frame)?.setVisibility(View.VISIBLE)
         }
-        purchases.checkState(object: BillingHelper.OnSetupFinishedListener {
-            override fun onSetupFinished(result: BillingHelper.Result?) {
-                if (result!!.isFailure()) {
-                    Log.d("surroundcalc", "Setup failed.")
-                    findViewById(R.id.ad_frame)?.setVisibility(View.VISIBLE)
-                } else {
-                    Log.d("surroundcalc", "Setup successful. Querying inventory.")
-                    if (purchases.hasPurchase(getString(R.string.sku_basic))) {
+
+        purchases!!.checkState(sku_basic, object : BillingHelper.QueryInventoryFinishedListener {
+            override fun onQueryInventoryFinished(result: BillingHelper.Result?, inventory: BillingHelper.Inventory?) {
+                if (result!!.isSuccess()) {
+                    if (inventory!!.hasPurchase(sku_basic)) {
                         findViewById(R.id.ad_frame)?.setVisibility(View.GONE)
                     } else {
                         findViewById(R.id.ad_frame)?.setVisibility(View.VISIBLE)
                     }
+                } else {
+                    findViewById(R.id.ad_frame)?.setVisibility(View.VISIBLE)
+                    showErrorToast(R.string.err_inventory)
                 }
             }
         })
     }
 
     protected override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) : Unit {
-        if (! Purchases.sharedInstance().billingHelper.handleActivityResult(requestCode, resultCode, data)) {
+        if (! purchases!!.billingHelper.handleActivityResult(requestCode, resultCode, data)) {
             super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
     public override fun onPause() : Unit {
         super.onPause()
-        Preferences(this).currentColor = doodleView.getDrawing()?.keyColor
+        adView?.stopLoading()
+        Preferences(this).currentColor = doodleView!!.getDrawing()?.keyColor
+    }
+
+    public override fun onStop() {
+        super.onStop()
+        purchases?.billingHelper?.dispose()
+    }
+
+
+    public override fun onDestroy() {
+        adView?.destroy()
+        super.onDestroy()
     }
 
     public override fun onCreateOptionsMenu(menu : Menu?) : Boolean {
@@ -163,22 +174,22 @@ class DoodleActivity : Activity() {
     public override fun onOptionsItemSelected(item : MenuItem?) : Boolean {
         return when (item?.getItemId()) {
             R.id.action_clear_drawing -> {
-                doodleView.clear()
+                doodleView!!.clear()
                 true
             }
             R.id.action_content_undo -> {
-                doodleView.undo()
+                doodleView!!.undo()
                 true
             }
             R.id.action_social_share -> {
-                if (noAd) {
-                    ActionSender().startActivity(this, doodleView.createBitmap())
+                if (purchases!!.isPurchased(sku_basic)) {
+                    ActionSender().startActivity(this, doodleView!!.createBitmap())
                 } else {
                     val builder = AlertDialog.Builder(this)
                     builder.setTitle(R.string.upgrade_title)
                     builder.setMessage(R.string.upgrade_message)
                     builder.setPositiveButton(R.string.upgrade) {(dialog: DialogInterface, which: Int) ->
-                        Purchases.sharedInstance().purchase(this, getString(R.string.sku_basic), object : Runnable {
+                        purchases!!.purchase(this, getString(R.string.sku_basic), object : Runnable {
                             override fun run() {
                                 findViewById(R.id.ad_frame)?.setVisibility(View.GONE)
                             }
@@ -194,10 +205,9 @@ class DoodleActivity : Activity() {
         }
     }
 
-    private val noAd: Boolean
-        get() {
-            return findViewById(R.id.ad_frame)?.getVisibility() == View.GONE
-        }
+    private fun showErrorToast(msgId: Int) {
+        Toast.makeText(this, msgId, Toast.LENGTH_SHORT).show()
+    }
 
     private fun addTab(actionBar : ActionBar, keyColor : Drawing.KeyColor, selected : Boolean) : Unit {
         val tab = actionBar.newTab()
@@ -222,15 +232,15 @@ class DoodleActivity : Activity() {
         actionBar.addTab(tab, selected)
 
         if (selected) {
-            doodleView.setDrawing(drawing)
+            doodleView!!.setDrawing(drawing)
         }
     }
 
     private inner class TabListener: ActionBar.TabListener {
         override fun onTabSelected(tab: ActionBar.Tab?, ft: FragmentTransaction?) {
             val drawing = (tab?.getTag() as Drawing)
-            doodleView.setDrawing(drawing)
-            if (! noAd) {
+            doodleView!!.setDrawing(drawing)
+            if (! purchases!!.isPurchased(sku_basic)) {
                 interstitial?.show()
             }
         }
@@ -246,7 +256,7 @@ class DoodleActivity : Activity() {
             else -> createMenuN(anchor, region.labels)
         }
 
-        setViewMargin(anchor, doodleView.getTapped())
+        setViewMargin(anchor, doodleView!!.getTapped())
         menu.show()
     }
 
@@ -268,8 +278,8 @@ class DoodleActivity : Activity() {
     }
 
     private fun addResult(value: Double) : Boolean {
-        doodleView.addResultLabel(doodleView.getTapped(), value)
-        doodleView.redraw()
+        doodleView!!.addResultLabel(doodleView!!.getTapped(), value)
+        doodleView!!.redraw()
         return true
     }
 
@@ -402,7 +412,7 @@ class DoodleActivity : Activity() {
             if (label != null) {
                 label.value = getValue()
             } else {
-                doodleView.addLabel(doodleView.getTapped(), getValue())
+                doodleView!!.addLabel(doodleView!!.getTapped(), getValue())
             }
             tenkey?.dismiss()
         }
@@ -413,19 +423,19 @@ class DoodleActivity : Activity() {
             text?.setText(label.text)
         } else {
             text?.setText("0")
-            doodleView.setMark()
+            doodleView!!.setMark()
         }
 
         tenkey!!.setOnDismissListener {
-            doodleView.resetMark()
-            doodleView.redraw()
+            doodleView!!.resetMark()
+            doodleView!!.redraw()
         }
 
         val anchor = findViewById(R.id.popup_anchor)!!
         setViewMargin(anchor, PointF(0.0f, 0.0f))
 
         handler.post {
-            tenkey!!.showAsDropDown(anchor, doodleView.getWidth(), 0)
+            tenkey!!.showAsDropDown(anchor, doodleView!!.getWidth(), 0)
         }
     }
 

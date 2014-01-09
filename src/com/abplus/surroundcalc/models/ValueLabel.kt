@@ -6,6 +6,7 @@ import java.nio.channels.FileLock
 import android.graphics.Rect
 import android.graphics.RectF
 import android.util.Log
+import java.util.regex.Pattern
 
 /**
  * Created by kazhida on 2014/01/04.
@@ -15,8 +16,24 @@ class ValueLabel(center: PointF, value: Double, val paint: Paint): Pickable() {
     private var center = PointF(center.x, center.y)
 
     public var value: Double = value
-    public val text: String get() = value.toString()
+    public val text: String get() = cutZero(value.toString())
     public val centerPoint: PointF get() = center
+
+    private fun cutZero(s0: String): String {
+        val p1 = Pattern.compile("([0-9]*)\\.0+")
+        val m1 = p1.matcher(s0)
+        if (m1.matches()) {
+            return m1.group(1)!!
+        } else {
+            val p2 = Pattern.compile("([0-9]*\\.[1-9]*)0+")
+            val m2 = p2.matcher(s0)
+            if (m2.matches()) {
+                return m2.group(1)!!
+            } else{
+                return s0
+            }
+        }
+    }
 
     val bounds: RectF
         get() {
@@ -28,10 +45,11 @@ class ValueLabel(center: PointF, value: Double, val paint: Paint): Pickable() {
             val w = rect.right - rect.left
             val h = rect.bottom - rect.top
 
+            //  領域は上下方向に広めに取る
             result.top = center.y - h
             result.left = center.x - w / 2
-            result.right = center.x + w /2
-            result.bottom = center.y
+            result.right = center.x + w / 2
+            result.bottom = center.y * h / 2
 
             return result
         }
