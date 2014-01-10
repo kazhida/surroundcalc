@@ -8,6 +8,8 @@ import android.app.Activity
 import com.abplus.surroundcalc.billing.BillingHelper.OnPurchaseFinishedListener
 import com.abplus.surroundcalc.billing.BillingHelper.Result
 import com.abplus.surroundcalc.billing.BillingHelper.Inventory
+import java.util.List
+import java.util.ArrayList
 
 /**
  * Created by kazhida on 2014/01/07.
@@ -17,9 +19,12 @@ class Purchases (val context: Context) {
     public val billingHelper: BillingHelper = BillingHelper(context)
 
     public fun checkState(sku: String, listener: BillingHelper.QueryInventoryFinishedListener): Unit {
+        val more = ArrayList<String>()
+        more.add(sku)
+
         billingHelper.startSetup {
             if (it!!.isSuccess()) {
-                val inventory = billingHelper.queryInventory(false)
+                val inventory = billingHelper.queryInventory(true, more)
                 if (inventory!!.hasPurchase(sku)) {
                     billingHelper.savePurchase(sku, 1)
                 } else {

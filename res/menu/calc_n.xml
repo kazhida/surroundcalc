@@ -4,20 +4,17 @@
 
     <item   android:id="@+id/func_sum"
             android:title="@string/undo"
-            android:icon="@drawable/func_sum"
             android:showAsAction="always"
             />
 
 
     <item   android:id="@+id/func_varp"
             android:title="@string/undo"
-            android:icon="@drawable/func_varp"
             android:showAsAction="always"
             />
 
     <item   android:id="@+id/func_vars"
             android:title="@string/undo"
-            android:icon="@drawable/func_vars"
             android:showAsAction="always"
             />
 

@@ -4,30 +4,25 @@
 
     <item   android:id="@+id/ope_add"
             android:title="@string/undo"
-            android:icon="@drawable/ope_add"
             android:showAsAction="always"
             />
 
     <item   android:id="@+id/ope_sub"
             android:title="@string/undo"
-            android:icon="@drawable/ope_sub"
             android:showAsAction="always"
             />
 
     <item   android:id="@+id/ope_mul"
             android:title="@string/undo"
-            android:icon="@drawable/ope_mul"
             android:showAsAction="always"
             />
     <item   android:id="@+id/ope_div"
             android:title="@string/undo"
-            android:icon="@drawable/ope_div"
             android:showAsAction="always"
             />
 
     <item   android:id="@+id/func_pow"
             android:title="@string/undo"
-            android:icon="@drawable/func_pow"
             android:showAsAction="always"
             />
 

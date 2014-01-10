@@ -153,14 +153,9 @@ class DoodleActivity : Activity() {
         Preferences(this).currentColor = doodleView!!.getDrawing()?.keyColor
     }
 
-    public override fun onStop() {
-        super.onStop()
-        purchases?.billingHelper?.dispose()
-    }
-
-
     public override fun onDestroy() {
         adView?.destroy()
+        purchases?.billingHelper?.dispose()
         super.onDestroy()
     }
 
