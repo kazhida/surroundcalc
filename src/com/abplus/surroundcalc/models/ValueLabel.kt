@@ -49,11 +49,10 @@ class ValueLabel(center: PointF, value: Double, val paint: Paint): Pickable() {
             result.top = center.y - h
             result.left = center.x - w / 2
             result.right = center.x + w / 2
-            result.bottom = center.y * h / 2
+            result.bottom = center.y + h / 2
 
             return result
         }
-
 
     override protected fun isInside(p: PointF): Boolean {
         val b = bounds
